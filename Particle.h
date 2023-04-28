@@ -82,10 +82,10 @@ public:
         //std::cout<<"difference velocity : "<< new_vel-tmp_vel<<std::endl;
         this->compute_k_energy();
     }
-    void compute_k_energy()
-    {
-        this->k_en = 0.5 * this->m * (pow(this->vx, 2) + pow(this->vy, 2));
+    inline void compute_k_energy(){
+        this->k_en = 0.5 * this->m * (this->vx*this->vx + this->vy * this->vy);
     }
+
     bool operator==(const Particle& other) const {
         return this->x == other.x && this->y == other.y && this->vx == other.vx && this->vy == other.vy && this->m == other.m && this->L == other.L && this->i == other.i && this->j == other.j;
     }

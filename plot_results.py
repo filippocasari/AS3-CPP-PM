@@ -3,9 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 ctx = zmq.Context()
-socket = ctx.socket(zmq.REP)
-socket.bind("tcp://*:5555")
-fig, ax = plt.subplots(2, 2, figsize=(12, 8))
+socket = ctx.socket(zmq.SUB)
+socket.connect("tcp://localhost:5556")
+socket.setsockopt(zmq.SUBSCRIBE, b"")
+fig, ax = plt.subplots(2, 2, figsize=(10, 6))
 ax1 = ax[0, 0]
 ax2 = ax[0, 1]
 ax3 = ax[1, 0]
@@ -45,7 +46,7 @@ while 1:
     momentum_list.append(momentum)
     temperature_list.append(T)
     scatter_plot.set_offsets(np.column_stack((x, y)))
-
+    #socket.send(b"OK")
     ax2.plot(list(range(len(potential_energy_list))), potential_energy_list, c='blue')
     ax2.plot(list(range(len(kinetic_energy_list))), kinetic_energy_list, c='red')
     ax2.plot(list(range(len(total_energy_list))), total_energy_list, c='green')
@@ -58,7 +59,7 @@ while 1:
     ax4.set_xlabel('Iter')
     ax4.set_ylabel('Temperature')
     plt.pause(0.0001)
-    socket.send(b"OK")
+
 
 
 

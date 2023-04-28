@@ -1,3 +1,6 @@
+//
+// Created by Filippo Casari on 27.04.23.
+//
 #include <fstream>
 #include <iostream>
 #include <thread>
@@ -10,6 +13,8 @@
 #include <unordered_set>
 #include <czmq.h>
 #include <csignal>
+#include <omp.h>
+#include <chrono>
 
 using namespace std;
 volatile bool stop = false;
@@ -92,8 +97,32 @@ struct PairHash {
         return h1 ^ (h2 << 1);
     }
 };
+static void publisher_actor(zsock_t *pipe, void *args)
+{
+    zsock_t *pub = zsock_new_pub("tcp://*:5556");
+    assert(pub);
+    zsock_signal(pipe, 0);
+    while (!zsys_interrupted) {
+        // Read message from the pipe
+        zmsg_t *msg = zmsg_recv(pipe);
+        //cout<<"message received"<<endl;
+
+        // Publish message
+        zmsg_send(&msg, pub);
+        zmsg_destroy(&msg);
+    }
+
+    zsock_destroy(&pub);
+}
+
 
 int main(int argc, char* argv[]) {
+    const char* num_threads = getenv("OMP_NUM_THREADS");
+    if (num_threads != nullptr) {
+        std::cout << "Using " << num_threads << " threads with OpenMP" << std::endl;
+    } else {
+        std::cout << "OpenMP not enabled" << std::endl;
+    }
     printf("Assignment 3\n");
     cout<<"Arguments to pass: N,  init temperature ,thermostat temp, verbose (optional, -v)"<<endl;
     signal(SIGINT, interrupt_handler);
@@ -136,7 +165,7 @@ int main(int argc, char* argv[]) {
     //std::cin >> init_temp;
     velocities = return_velocities(init_temp, N, m);
 
-    
+
     std::vector<std::pair<double, double>> positions;
     for (int i = 0; i < L; i++) {
         for (int j = 0; j < L; j++) {
@@ -207,7 +236,8 @@ int main(int argc, char* argv[]) {
     }
 
 
-    zsock_t *socket = zsock_new_req("tcp://localhost:5555");
+    //zsock_t *socket = zsock_new_req("tcp://localhost:5556");
+    zactor_t *publisher = zactor_new(publisher_actor, nullptr);
     zmsg_t *reply;
     zmsg_t *message = zmsg_new();
     double T = init_temp;
@@ -218,8 +248,11 @@ int main(int argc, char* argv[]) {
     zframe_t *frame_k_en;
     zframe_t *frame_m;
 
+    int iter = -1;
+    auto start_time = std::chrono::high_resolution_clock::now();
+    while (!stop && !zsys_interrupted && iter<600) {
+        iter++;
 
-    while (!stop && !zsys_interrupted) {
         message = zmsg_new();
         //cell_list.clear();
 
@@ -273,6 +306,7 @@ int main(int argc, char* argv[]) {
 
 
         int iterations = 0;
+//#pragma omp parallel for reduction(+:potential_energy)
         for (auto &part: particle_list) {
 
             double x = part.x, y = part.y;
@@ -337,7 +371,7 @@ int main(int argc, char* argv[]) {
         double momentum =0;
         double sum_vx = 0;
         double sum_vy = 0;
-
+//#pragma omp parallel for reduction(+:kinetic_energy,sum_vx,sum_vy)
         for (int i = 0; i < particle_list.size(); i++) {
             x_array[i] = particle_list[i].x;
             //cout<<"x["<<i<<"] = "<<x_array[i]<<endl;
@@ -366,17 +400,24 @@ int main(int argc, char* argv[]) {
         zmsg_add(message, frame_t);
 
 
-        zmsg_send(&message, socket);
-        reply = zmsg_recv(socket);
-        zframe_t *reply_frame = zmsg_pop(reply);
+        zmsg_send(&message, publisher);
+
+        //zframe_t *reply_frame = zmsg_pop(reply);
 
 
-        zframe_destroy(&reply_frame);
+        //zframe_destroy(&reply_frame);
+        //auto end_time = std::chrono::high_resolution_clock::now();
+        //auto elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
 
+        //std::cout << "Elapsed time: " << elapsed_time << " nanoseconds" << std::endl;
 
     }
-    zsock_destroy(&socket);
-    zmsg_destroy(&reply);
+    auto end = std::chrono::high_resolution_clock::now(); // get end time
+    auto duration = (end - start_time); // calculate duration
+
+    cout << "Execution time: " << duration.count() << " microseconds" << endl;
+    zactor_destroy(&publisher);
+    //zmsg_destroy(&reply);
     cout<<"AS3 completed"<<endl;
     return 0;
 }
