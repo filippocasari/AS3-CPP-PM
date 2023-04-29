@@ -1,20 +1,19 @@
 #!/bin/bash -l
 function cleanup {
     echo "Exiting..."
-    kill "$PYTHON_PID"
+    #kill "$PYTHON_PID"
     kill "$CPP_PID"
     exit
 }
 trap cleanup EXIT
-export OMP_NUM_THREADS=6
-export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
-export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
+export OMP_NUM_THREADS=2
+
 #cmake ./CMakeLists.txt
 #make
-
-/opt/homebrew/opt/llvm/bin/clang++ $LDFLAGS $CPPFLAGS -std=c++11 -Xpreprocessor -fopenmp -lomp -lczmq -O3 -arch arm64 main.cpp Particle.cpp -o AS3PM
-python3.11 plot_results.py &
-PYTHON_PID=$!
+g++ main2.cpp Particle.cpp -std=c++17 -L/Library/Frameworks/Python.framework/Versions/3.10/lib -lpython3.10  -lczmq -I/usr/local/Cellar/libomp/16.0.2/include -L/usr/local/Cellar/python@3.10/3.10.10_1/Frameworks/Python.framework/Versions/3.10/include/python3.10 -I/usr/local/Cellar/python@3.10/3.10.10_1/Frameworks/Python.framework/Versions/3.10/include/python3.10 -I/usr/local/lib/python3.10/site-packages/numpy/core/include -lomp -o AS3PM
+#/opt/homebrew/opt/llvm/bin/clang++ $LDFLAGS $CPPFLAGS -std=c++11 -Xpreprocessor -fopenmp -lomp -lczmq -O3 -arch arm64 main.cpp Particle.cpp -o AS3PM
+#python3.8 plot_results.py &
+#PYTHON_PID=$!
 N=$1
 INIT_TEMP=$2
 THERMOSTAT_TEMP=$3
@@ -33,6 +32,6 @@ else
 fi
 ./AS3PM "$N" "$INIT_TEMP" "$THERMOSTAT_TEMP" "$VERBOSE" &
 CPP_PID=$!
-wait $PYTHON_PID
+wait $CPP_PID
 echo "Particle Methods 3 Test Finished!!!"
 
