@@ -378,8 +378,6 @@ int main(int argc, char* argv[]) {
         momentum_list.push_back(momentum);
         T = 2.0*kinetic_energy/(3.0*N);
 
-
-
             //cout<<"iter: "<< iter<<endl;
         if(iter%100==0){
             if(iter%2000==0){
