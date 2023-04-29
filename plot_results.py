@@ -75,7 +75,6 @@ while 1:
     ax4.set_ylabel('Temperature')
     plt.draw()
     plt.pause(0.000001)
-socket.disconnect()
 
 
 
