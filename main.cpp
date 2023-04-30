@@ -43,11 +43,11 @@ double compute_init_potential_energy(std::vector<Particle> particles, double L, 
     double rc6 = pow(rc, 6);
     double rc12 = rc6 * rc6;
     int counter = 0;
-    for (int i = 0; i < particles.size() - 1; i++) {
+    for (int i = 0; i < (int)particles.size() - 1; i++) {
         auto part = particles[i];
         double x = part.x, y = part.y;
 
-        for (int j = i + 1; j < particles.size(); j++) {
+        for (int j = i + 1; j < (int)particles.size(); j++) {
             auto part2 = particles[j];
             double d_x = x - part2.x;
             if (d_x > L / 2) {
@@ -168,7 +168,7 @@ int main(int argc, char *argv[]) {
 
     for (int i = 0; i < N; i++) {
         double alpha = 2.0 * 3.14 * rand();
-        int ind = rand() % positions.size();
+        int ind = rand() % (int) positions.size();
         double pos_x = positions[ind].first;
         double pos_y = positions[ind].second;
         positions.erase(positions.begin() + ind);
@@ -398,7 +398,7 @@ int main(int argc, char *argv[]) {
     auto end = std::chrono::high_resolution_clock::now(); // get end time
     auto duration = (end - start_time); // calculate duration
 
-    cout << "Execution time: " << duration.count() / 1000000.0 << " seconds" << endl;
+    cout << "Execution time: " << (double)duration.count() / 1000000.0 << " seconds" << endl;
     cout << "AS3 completed" << endl;
     return 0;
 }
