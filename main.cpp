@@ -134,6 +134,10 @@ int main(int argc, char *argv[]) {
     double dt = static_cast<double>(std::strtod(argv[4], nullptr));
 
     double thermostat_temp = std::strtod(argv[3], nullptr);
+    if(thermostat_temp<0){
+        cerr<<"thermostat must be greater than 0"<<endl;
+        return -1;
+    }
     cout << "thermostat temp: " << thermostat_temp << endl;
 
     int N_X = static_cast<int>(L / rc);
@@ -356,7 +360,7 @@ int main(int argc, char *argv[]) {
                 auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                         end - start_time); // calculate duration
                 double duration_seconds = static_cast<double>(duration.count()) / 1'000'000.0;
-                cout << "At iteration: " << iter << "time execution: " << duration_seconds << " seconds" << endl;
+                cout << "At iteration: " << iter << " time execution: " << duration_seconds << " seconds" << endl;
             }
             //plt::clf();
             plt::subplot(2, 2, 1);
