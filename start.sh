@@ -1,7 +1,6 @@
 #!/bin/bash -l
 function cleanup {
     echo "Exiting..."
-    #kill "$PYTHON_PID"
     kill "$CPP_PID"
     exit
 }
