@@ -9,13 +9,9 @@
 #include <thread>
 #include <sstream>
 #include <vector>
-#include <tuple>
-#include <utility>
 #include "Particle.h"
-#include <functional>
 #include <unordered_set>
 #include <csignal>
-#include <chrono>
 #include "matplotlib-cpp/matplotlibcpp.h"
 #include <omp.h>
 using namespace std;
