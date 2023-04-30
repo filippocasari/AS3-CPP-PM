@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(AS3PM CXX)
 
 set(SOURCES
-        main2.cpp
+        main.cpp
         Particle.cpp
         )
 

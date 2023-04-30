@@ -14,13 +14,15 @@
 #include <csignal>
 #include "matplotlib-cpp/matplotlibcpp.h"
 #include <omp.h>
+
 using namespace std;
 namespace plt = matplotlibcpp;
 volatile bool stop = false;
-void interrupt_handler(int signal_num)
-{
+
+void interrupt_handler(int signal_num) {
     stop = true;
 }
+
 double *return_velocities(double init_temp, int N, double m) {
 
     double init_total_kinetic_energy = 1.5 * ((double) N) * init_temp;
@@ -95,28 +97,27 @@ struct PairHash {
 };
 
 
-
-int main(int argc, char* argv[]) {
+int main(int argc, char *argv[]) {
 
     plt::figure_size(1200, 780);
-    const char* num_threads = getenv("OMP_NUM_THREADS");
+    const char *num_threads = getenv("OMP_NUM_THREADS");
     if (num_threads != nullptr) {
         std::cout << "Using " << num_threads << " threads with OpenMP" << std::endl;
     } else {
         std::cout << "OpenMP not enabled" << std::endl;
     }
     printf("Assignment 3\n");
-    cout<<"Arguments to pass: N,  init temperature ,thermostat temp, verbose (optional, -v)"<<endl;
+    cout << "Arguments to pass: N,  init temperature ,thermostat temp, verbose (optional, -v)" << endl;
     signal(SIGINT, interrupt_handler);
     int N = static_cast<int>(std::strtol(argv[1], nullptr, 10));
 
-    cout<<"N: " << N << endl;
+    cout << "N: " << N << endl;
     bool verbose;
-    if(argv[5] != nullptr && strcmp(argv[5], "-v") == 0){
-        cout<<"verbose: " << "True" << endl;
+    if (argv[5] != nullptr && strcmp(argv[5], "-v") == 0) {
+        cout << "verbose: " << "True" << endl;
         verbose = true;
-    }else{
-        cout<<"verbose: " << "False" << endl;
+    } else {
+        cout << "verbose: " << "False" << endl;
         verbose = false;
     }
 
@@ -133,7 +134,7 @@ int main(int argc, char* argv[]) {
     double dt = static_cast<double>(std::strtod(argv[4], nullptr));
 
     double thermostat_temp = std::strtod(argv[3], nullptr);
-    cout<<"thermostat temp: " << thermostat_temp << endl;
+    cout << "thermostat temp: " << thermostat_temp << endl;
 
     int N_X = static_cast<int>(L / rc);
     int N_Y = static_cast<int>(L / rc);
@@ -143,7 +144,7 @@ int main(int argc, char* argv[]) {
 
     double *velocities;
     double init_temp = std::strtod(argv[2], nullptr);
-    cout<<"init temp: " << init_temp << endl;
+    cout << "init temp: " << init_temp << endl;
 
     velocities = return_velocities(init_temp, N, m);
 
@@ -174,7 +175,7 @@ int main(int argc, char* argv[]) {
         double vy = velocities[i] * sin(alpha);
         int xcell = static_cast<int>(x / rc);
         int ycell = static_cast<int>(y / rc);
-        if(verbose){
+        if (verbose) {
             cout << "xcell: " << xcell << " = " << x << " / " << rc << endl;
             cout << "ycell: " << ycell << " = " << y << " / " << rc << endl;
         }
@@ -192,7 +193,7 @@ int main(int argc, char* argv[]) {
     } else {
         std::cout << "Some particles have duplicate coordinates" << std::endl;
     }
-    if(verbose){
+    if (verbose) {
         for (int i = 0; i < particle_list.size(); i++) {
             cout << "particle " << i << " position = " << particle_list[i].x << ", " << particle_list[i].y << endl;
             cout << "particle " << i << " velocities = " << particle_list[i].vx << ", " << particle_list[i].vy << endl;
@@ -218,14 +219,13 @@ int main(int argc, char* argv[]) {
     }
 
 
-
     double T = init_temp;
     int iter = -1;
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
 
-    while (!stop && iter<20000) {
+    while (!stop && iter < 20000) {
         iter++;
 
 //#pragma omp parallel for
@@ -234,7 +234,7 @@ int main(int argc, char* argv[]) {
             int j_old = part.j;
             double x_old = part.x;
             double y_old = part.y;
-            if(init_temp != thermostat_temp){
+            if (init_temp != thermostat_temp) {
                 part.apply_thermostat_scaling(T);
             }
 
@@ -268,10 +268,6 @@ int main(int argc, char* argv[]) {
         double potential_energy = 0.0;
         double rc6 = pow(rc, 6);
         double rc12 = rc6 * rc6;
-
-
-
-
 
         for (auto &part: particle_list) {
 
@@ -334,73 +330,72 @@ int main(int argc, char* argv[]) {
         double momentum;
         double sum_vx = 0;
         double sum_vy = 0;
-#pragma omp parallel for reduction(+:kinetic_energy,sum_vx,sum_vy)
+#pragma omp parallel for reduction(+:kinetic_energy, sum_vx, sum_vy)
         for (int i = 0; i < particle_list.size(); i++) {
             x_array[i] = particle_list[i].x;
             y_array[i] = particle_list[i].y;
             kinetic_energy += particle_list[i].k_en;
 
-            sum_vx+=particle_list[i].vx;
-            sum_vy+=particle_list[i].vy;
+            sum_vx += particle_list[i].vx;
+            sum_vy += particle_list[i].vy;
 
         }
         kinetic_energy_list.push_back(kinetic_energy);
         pot_energy_list.push_back(potential_energy);
-        tot_energy_list.push_back(kinetic_energy+potential_energy);
+        tot_energy_list.push_back(kinetic_energy + potential_energy);
         temperatures.push_back(T);
 
-        momentum = sqrt(sum_vx*sum_vx + sum_vy*sum_vy)*m;
+        momentum = sqrt(sum_vx * sum_vx + sum_vy * sum_vy) * m;
         momentum_list.push_back(momentum);
-        T = 2.0*kinetic_energy/(3.0*N);
+        T = 2.0 * kinetic_energy / (3.0 * N);
 
-            //cout<<"iter: "<< iter<<endl;
-        if(iter%100==0){
-            if(iter%2000==0){
+        //cout<<"iter: "<< iter<<endl;
+        if (iter % 100 == 0) {
+            if (iter % 2000 == 0) {
                 auto end = std::chrono::high_resolution_clock::now(); // get end time
-                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start_time); // calculate duration
+                auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                        end - start_time); // calculate duration
                 double duration_seconds = static_cast<double>(duration.count()) / 1'000'000.0;
-                cout << "At iteration: " <<iter<<"time execution: "<< duration_seconds << " seconds" << endl;
+                cout << "At iteration: " << iter << "time execution: " << duration_seconds << " seconds" << endl;
             }
             //plt::clf();
-            plt::subplot(2,2,1);
+            plt::subplot(2, 2, 1);
             plt::cla();
-            plt::xlim(0.0, (double)L);
-            plt::ylim(0.0, (double)L);
+            plt::xlim(0.0, (double) L);
+            plt::ylim(0.0, (double) L);
             plt::grid(true);
             plt::scatter(x_array, y_array, 20);
-            plt::subplot(2,2,2);
+            plt::subplot(2, 2, 2);
             plt::named_plot("kinetic", kinetic_energy_list, "red");
-            plt::named_plot("potential",pot_energy_list, "blue");
+            plt::named_plot("potential", pot_energy_list, "blue");
             plt::named_plot("total", tot_energy_list, "green");
             plt::xlabel("Iterations");
-            if(iter==0){plt::legend();}
+            if (iter == 0) { plt::legend(); }
             plt::grid(true);
-            plt::subplot(2,2,3);
+            plt::subplot(2, 2, 3);
 
-            plt::named_plot("temperature", temperatures,"r");
-            if(iter==0){plt::legend();}
+            plt::named_plot("temperature", temperatures, "r");
+            if (iter == 0) { plt::legend(); }
             plt::grid(true);
             plt::xlabel("Iterations");
-            plt::subplot(2,2,4);
+            plt::subplot(2, 2, 4);
 
-            plt::named_plot("momentum", momentum_list,"blue");
-            if(iter==0){plt::legend();}
+            plt::named_plot("momentum", momentum_list, "blue");
+            if (iter == 0) { plt::legend(); }
             plt::grid(true);
             plt::xlabel("Iterations");
-            if(iter==0){plt::legend();}
+            if (iter == 0) { plt::legend(); }
             plt::draw();
 
             plt::pause(0.001);
         }
 
-
     }
     auto end = std::chrono::high_resolution_clock::now(); // get end time
     auto duration = (end - start_time); // calculate duration
 
-    cout << "Execution time: " << duration.count()/1000000.0 << " seconds" << endl;
-
-    cout<<"AS3 completed"<<endl;
+    cout << "Execution time: " << duration.count() / 1000000.0 << " seconds" << endl;
+    cout << "AS3 completed" << endl;
     return 0;
 }
 
