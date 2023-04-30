@@ -11,6 +11,10 @@ or
 ```shell
 ./start.sh args
 ```
+For example:
+```shell
+./start.sh 300 0.1 0.1 0.01
+```
 For arguments help run:
 ```shell
 ./start.sh --help 
@@ -19,7 +23,7 @@ or
 ```shell
 ./start.sh -h
 ```
-args are: Num particles initial temperature (double), bath temperature and verbose (-v).\
+args are: Num particles initial temperature (double), bath temperature and verbose (-v), delta t.\
 ### Note: 
 - #### For only this point initial temperature and bath temperature must be equal. 
 - #### if you don't want to run it with openmp, comment pragma in the cpp file and do not include or link any libraries related to it.

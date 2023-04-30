@@ -30,7 +30,6 @@ double *return_velocities(double init_temp, int N, double m) {
     double init_total_kinetic_energy = 1.5 * ((double) N) * init_temp;
 
     const double individual_kin_energy = init_total_kinetic_energy / (double) N;
-    //velocities = np.full(N, np.sqrt(2*individual_kin_energy/m));
     auto *velocities = new double[N];
     for (int i = 0; i < N; ++i) {
         velocities[i] = sqrt(2.0 * individual_kin_energy / m);
@@ -66,13 +65,11 @@ double compute_init_potential_energy(std::vector<Particle> particles, double L, 
             }
 
             double r = sqrt(d_x * d_x + d_y * d_y);
-            //std::cout << " r init: " << r << endl;
             double r6 = pow(r, 6);
             double r12 = r6 * r6;
             counter++;
             if (r <= rc) {
-                //std::cout<< " Potential energy: " << potential_energy << endl;
-                //cout<< "value to add "<< 4 * (1.0/(r12) - 1.0/(r6)) - 4*((1.0/(rc12)) - (1.0/(rc6))) << endl;
+
                 potential_energy += 4 * (1.0 / (r12) - 1.0 / (r6)) - 4 * ((1.0 / (rc12)) - (1.0 / (rc6)));
             }
 
@@ -116,12 +113,10 @@ int main(int argc, char* argv[]) {
     cout<<"Arguments to pass: N,  init temperature ,thermostat temp, verbose (optional, -v)"<<endl;
     signal(SIGINT, interrupt_handler);
     int N = static_cast<int>(std::strtol(argv[1], nullptr, 10));
-    //std::cout << "Insert N: \n";
-    //std::cin >> N;
-    // Enable point size control in the vertex shader
+
     cout<<"N: " << N << endl;
     bool verbose;
-    if(argv[4] != nullptr && strcmp(argv[4], "-v") == 0){
+    if(argv[5] != nullptr && strcmp(argv[5], "-v") == 0){
         cout<<"verbose: " << "True" << endl;
         verbose = true;
     }else{
@@ -139,12 +134,11 @@ int main(int argc, char* argv[]) {
 
     double m = 1.0;
     double rc = 2.5;
-    double dt = 0.001;
+    double dt = static_cast<double>(std::strtod(argv[4], nullptr));
 
     double thermostat_temp = std::strtod(argv[3], nullptr);
     cout<<"thermostat temp: " << thermostat_temp << endl;
-    //std::cout << "Insert thermostat temperature: ";
-    //std::cin >> thermostat_temp;
+
     int N_X = static_cast<int>(L / rc);
     int N_Y = static_cast<int>(L / rc);
     printf("N_X = %d\n", N_X);
@@ -154,8 +148,7 @@ int main(int argc, char* argv[]) {
     double *velocities;
     double init_temp = std::strtod(argv[2], nullptr);
     cout<<"init temp: " << init_temp << endl;
-    //std::cout << "Insert thermostat temperature: ";
-    //std::cin >> init_temp;
+
     velocities = return_velocities(init_temp, N, m);
 
 
@@ -170,14 +163,14 @@ int main(int argc, char* argv[]) {
     //for (int i=0;i<(positions.size());i++){
     //cout << "position "<< i << " = " << positions[i].first << ", "<<positions[i].second << endl;
 
-    //};
+
 
     for (int i = 0; i < N; i++) {
         double alpha = 2.0 * 3.14 * rand();
-        int indx = rand() % positions.size();
-        double pos_x = positions[indx].first;
-        double pos_y = positions[indx].second;
-        positions.erase(positions.begin() + indx);
+        int ind = rand() % positions.size();
+        double pos_x = positions[ind].first;
+        double pos_y = positions[ind].second;
+        positions.erase(positions.begin() + ind);
 
         double x = pos_x;
         double y = pos_y;
@@ -239,9 +232,6 @@ int main(int argc, char* argv[]) {
     while (!stop && iter<20000) {
         iter++;
 
-        //message = zmsg_new();
-        //cell_list.clear();
-
 //#pragma omp parallel for
         for (auto &part: particle_list) {
             int i_old = part.i;
@@ -251,17 +241,11 @@ int main(int argc, char* argv[]) {
             if(init_temp != thermostat_temp){
                 part.apply_thermostat_scaling(T);
             }
-            //part.apply_thermostat_scaling(T);
 
             part.update(dt, rc);
 
             int x_cell = part.i;
             int y_cell = part.j;
-            //cout<< "i old "<< i_old<< " j old "<< j_old<<endl;
-            //cout<< "i new "<< x_cell<< " j new "<< y_cell<<endl;
-
-
-            //cout << "size cell old : " << cell_list[i_old][j_old].size() << endl;
 
             cell_list[x_cell][y_cell].push_back(part);
 
@@ -270,14 +254,13 @@ int main(int argc, char* argv[]) {
                 if (cell_list[i_old][j_old][i].x == x_old && cell_list[i_old][j_old][i].y == y_old &&
                     cell_list[i_old][j_old][i].i == i_old && cell_list[i_old][j_old][i].j == j_old) {
                     in = i;
-                    //cout << "found" << endl;
                     break;
                 }
             }
-            //cout << in << endl;
+
             if (in != -1) {
                 cell_list[i_old][j_old].erase(cell_list[i_old][j_old].begin() + in);
-                //cout << "size cell new : " << cell_list[i_old][j_old].size() << endl;
+
             } else {
                 cout << "not found" << endl;
             }
@@ -291,8 +274,8 @@ int main(int argc, char* argv[]) {
         double rc12 = rc6 * rc6;
 
 
-        int iterations = 0;
-//
+
+
 
         for (auto &part: particle_list) {
 
@@ -303,7 +286,7 @@ int main(int argc, char* argv[]) {
 
             double Fx = 0.0;
             double Fy = 0.0;
-            iterations++;
+
             for (int i = -1; i < 2; i++) {
 
                 for (int j = -1; j < 2; j++) {
@@ -316,7 +299,6 @@ int main(int argc, char* argv[]) {
                     if (cell_y_new < 0) {
                         cell_y_new += N_Y;
                     }
-                    //cout<<"i : "<<cell_x_new<< " j: "<< cell_y_new<< endl;
 #pragma omp parallel for reduction(+:potential_energy)
                     for (auto &part2: cell_list[cell_x_new][cell_y_new]) {
 
@@ -334,7 +316,7 @@ int main(int argc, char* argv[]) {
                         }
 
                         double r = std::sqrt(d_x * d_x + d_y * d_y);
-                        //std::cout<< " r: " << r << endl;
+
 
                         if (r <= rc && r > 0.0) {
                             double r6 = pow(r, 6);
@@ -342,18 +324,16 @@ int main(int argc, char* argv[]) {
                             double r2 = r * r;
                             Fx += ((48.0 * (d_x / r)) / r2) * (1.0 / r12 - 0.5 / r6);
                             Fy += ((48.0 * (d_y / r)) / r2) * (1.0 / r12 - 0.5 / r6);
-                            //std::cout<< " Potential energy: " << potential_energy << endl;
-                            //cout<< "value to add "<< 4 * (1.0/(r12) - 1.0/(r6)) - 4*((1.0/(rc12)) - (1.0/(rc6))) << endl;
                             potential_energy += 4.0 * (1.0 / (r12) - 1.0 / (r6)) - 4 * ((1.0 / (rc12)) - (1.0 / (rc6)));
                         }
                     }
                 }
 
             }
-            //cout<<"F x : "<<Fx<< " , Fy : "<< Fy<<endl;
+
             part.update_vel_acc(dt, Fx, Fy);
         }
-        //cout<< "Iterations "<< iterations<< endl;
+
         double kinetic_energy = 0;
         double momentum;
         double sum_vx = 0;
@@ -361,10 +341,9 @@ int main(int argc, char* argv[]) {
 #pragma omp parallel for reduction(+:kinetic_energy,sum_vx,sum_vy)
         for (int i = 0; i < particle_list.size(); i++) {
             x_array[i] = particle_list[i].x;
-            //cout<<"x["<<i<<"] = "<<x_array[i]<<endl;
             y_array[i] = particle_list[i].y;
             kinetic_energy += particle_list[i].k_en;
-            //v =sqrt(particle_list[i].vx*particle_list[i].vx + particle_list[i].vy*particle_list[i].vy);
+
             sum_vx+=particle_list[i].vx;
             sum_vy+=particle_list[i].vy;
 
@@ -419,28 +398,12 @@ int main(int argc, char* argv[]) {
         }
 
 
-
-
-
-
-        //zmsg_destroy(message);
-
-        //zframe_t *reply_frame = zmsg_pop(reply);
-
-
-        //zframe_destroy(&reply_frame);
-        //auto end_time = std::chrono::high_resolution_clock::now();
-        //auto elapsed_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count();
-
-        //std::cout << "Elapsed time: " << elapsed_time << " nanoseconds" << std::endl;
-
     }
     auto end = std::chrono::high_resolution_clock::now(); // get end time
     auto duration = (end - start_time); // calculate duration
 
     cout << "Execution time: " << duration.count()/1000000.0 << " seconds" << endl;
-    //zactor_destroy(&publisher);
-    //zmsg_destroy(&reply);
+
     cout<<"AS3 completed"<<endl;
     return 0;
 }
