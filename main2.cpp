@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
             positions.emplace_back(static_cast<double> (i ), static_cast<double> (j));
         }
 
-    };
+    }
     printf("size vector particles: %lu\n", particle_list.size());
     //for (int i=0;i<(positions.size());i++){
     //cout << "position "<< i << " = " << positions[i].first << ", "<<positions[i].second << endl;
@@ -181,7 +181,7 @@ int main(int argc, char* argv[]) {
 
         particle_list.emplace_back(x, y, vx, vy, m, L, xcell, ycell, thermostat_temp);
 
-    };
+    }
 
     std::unordered_set<std::pair<double, double>, PairHash> unique_positions;
     for (const auto &part: particle_list) {
@@ -197,7 +197,7 @@ int main(int argc, char* argv[]) {
             cout << "particle " << i << " position = " << particle_list[i].x << ", " << particle_list[i].y << endl;
             cout << "particle " << i << " velocities = " << particle_list[i].vx << ", " << particle_list[i].vy << endl;
             cout << "particle " << i << " cell = " << particle_list[i].i << ", " << particle_list[i].j << endl;
-        };
+        }
     }
 
     double init_potential_energy = compute_init_potential_energy(particle_list, L, rc);
@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
                                                                                                       std::vector<Particle>()));
     for (auto &i: particle_list) {
         cell_list[i.i][i.j].push_back(i);
-    };
+    }
 
 
     vector<double> x_array = vector<double>(particle_list.size());

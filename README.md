@@ -24,6 +24,7 @@ or
 ./start.sh -h
 ```
 args are: Num particles initial temperature (double), bath temperature and verbose (-v), delta t.\
+### Alternatively, you can use cmake and CMakeLists.txt. Remember to change it before running it because some libs are hardcoded. 
 ### Note: 
 - #### For only this point initial temperature and bath temperature must be equal. 
 - #### if you don't want to run it with openmp, comment pragma in the cpp file and do not include or link any libraries related to it.
