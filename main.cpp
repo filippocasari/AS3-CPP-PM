@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
 
     double m = 1.0;
     double rc = 2.5;
-    double dt = static_cast<double>(std::strtod(argv[4], nullptr));
+    auto dt = static_cast<double>(std::strtod(argv[4], nullptr));
 
     double thermostat_temp = std::strtod(argv[3], nullptr);
     if(thermostat_temp<0){
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Some particles have duplicate coordinates" << std::endl;
     }
     if (verbose) {
-        for (int i = 0; i < particle_list.size(); i++) {
+        for (int i = 0; i < (int) particle_list.size(); i++) {
             cout << "particle " << i << " position = " << particle_list[i].x << ", " << particle_list[i].y << endl;
             cout << "particle " << i << " velocities = " << particle_list[i].vx << ", " << particle_list[i].vy << endl;
             cout << "particle " << i << " cell = " << particle_list[i].i << ", " << particle_list[i].j << endl;
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
 
     vector<double> x_array = vector<double>(particle_list.size());
     vector<double> y_array = vector<double>(particle_list.size());
-    for (int i = 0; i < particle_list.size(); i++) {
+    for (int i = 0; i < (int) particle_list.size(); i++) {
         x_array[i] = particle_list[i].x;
         y_array[i] = particle_list[i].y;
     }
@@ -250,7 +250,7 @@ int main(int argc, char *argv[]) {
             cell_list[x_cell][y_cell].push_back(part);
 
             int in = -1;
-            for (int i = 0; i < cell_list[i_old][j_old].size(); i++) {
+            for (int i = 0; i < (int) cell_list[i_old][j_old].size(); i++) {
                 if (cell_list[i_old][j_old][i].x == x_old && cell_list[i_old][j_old][i].y == y_old &&
                     cell_list[i_old][j_old][i].i == i_old && cell_list[i_old][j_old][i].j == j_old) {
                     in = i;
@@ -335,7 +335,7 @@ int main(int argc, char *argv[]) {
         double sum_vx = 0;
         double sum_vy = 0;
 #pragma omp parallel for reduction(+:kinetic_energy, sum_vx, sum_vy)
-        for (int i = 0; i < particle_list.size(); i++) {
+        for (int i = 0; i < (int) particle_list.size(); i++) {
             x_array[i] = particle_list[i].x;
             y_array[i] = particle_list[i].y;
             kinetic_energy += particle_list[i].k_en;
