@@ -398,7 +398,7 @@ int main(int argc, char *argv[]) {
     auto end = std::chrono::high_resolution_clock::now(); // get end time
     auto duration = (end - start_time); // calculate duration
 
-    cout << "Execution time: " << (double)duration.count() / 1000000.0 << " seconds" << endl;
+    cout <<endl<<"Execution time: " << (double)duration.count() / 1000000.0 << " seconds" << endl;
     cout << "AS3 completed" << endl;
     return 0;
 }
