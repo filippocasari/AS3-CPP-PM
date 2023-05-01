@@ -15,7 +15,9 @@ target_compile_features(AS3PM PRIVATE cxx_std_17)
 target_include_directories(AS3PM PRIVATE
         /usr/local/Cellar/libomp/16.0.2/include
         /usr/local/Cellar/python@3.10/3.10.10_1/Frameworks/Python.framework/Versions/3.10/include/python3.10
-        /usr/local/lib/python3.10/site-packages/numpy/core/include
+        #/usr/local/lib/python3.10/site-packages/numpy/core/include
+        /Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/numpy/core/include
+
         )
 
 target_link_directories(AS3PM PRIVATE
