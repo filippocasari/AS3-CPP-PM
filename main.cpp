@@ -228,9 +228,29 @@ int main(int argc, char *argv[]) {
 
     auto start_time = std::chrono::high_resolution_clock::now();
 
+    double mean=0;
+    double variance=0;
+    double old_mean;
+    double old_variance;
 
     while (!stop && iter < 20000) {
         iter++;
+        if(iter%100==0){
+            cout<< "iter: "<< iter << " mean: "<< mean << " variance: "<< variance/(100) << endl;
+            if(variance/(100)<0.1){
+                cout<< "system stable"<< endl;
+            }
+            mean = 0; variance = 0;
+
+        }
+
+        if(iter%100>0){
+            old_mean = mean;
+            old_variance = variance;
+            mean = mean + (tot_energy_list[iter-1]-mean)/(iter%100);
+            variance = old_variance + (tot_energy_list[iter-1]-old_mean)*(tot_energy_list[iter-1]-mean);
+        }
+
 
 //#pragma omp parallel for
         for (auto &part: particle_list) {
