@@ -1,15 +1,12 @@
 //
 // Created by Filippo Casari on 28/04/23.
 //
-//
-// Created by Filippo Casari on 27.04.23.
-//
-#include <fstream>
 #include <iostream>
 #include <thread>
 #include <sstream>
 #include <vector>
 #include "Particle.h"
+#include "Rdf.h"
 #include <unordered_set>
 #include <csignal>
 #include "matplotlib-cpp/matplotlibcpp.h"
@@ -99,7 +96,11 @@ struct PairHash {
 
 int main(int argc, char *argv[]) {
 
-    plt::figure_size(1200, 780);
+    if(argc<5){
+        cerr<<"Not enough arguments"<<endl;
+        return 3;
+    }
+
     const char *num_threads = getenv("OMP_NUM_THREADS");
     if (num_threads != nullptr) {
         std::cout << "Using " << num_threads << " threads with OpenMP" << std::endl;
@@ -161,8 +162,11 @@ int main(int argc, char *argv[]) {
 
     }
     printf("size vector particles: %lu\n", particle_list.size());
-    //for (int i=0;i<(positions.size());i++){
-    //cout << "position "<< i << " = " << positions[i].first << ", "<<positions[i].second << endl;
+    if(verbose){
+        for (int i=0;i<(positions.size());i++){
+            cout << "position "<< i << " = " << positions[i].first << ", "<<positions[i].second << endl;
+        }
+    }
 
 
 
@@ -229,26 +233,51 @@ int main(int argc, char *argv[]) {
     auto start_time = std::chrono::high_resolution_clock::now();
 
     double mean=0;
-    double variance=0;
-    double old_mean;
-    double old_variance;
+    double std=0;
+    int nBins = 20;
 
+
+    vector<double>rdf(nBins);
+    plt::backend("TkAgg");
+    plt::ion();
+    //plt::figure();
+    plt::figure_size(900, 650);
+    plt::title("Particle Methods with dt = "+to_string(dt)+" , T = "+to_string(T));
+
+
+    double std_min;
+    if(init_temp == thermostat_temp){
+        std_min = 0.006;
+    }else{
+        std_min = 0.001;
+    }
     while (!stop && iter < 20000) {
         iter++;
-        if(iter%100==0){
-            cout<< "iter: "<< iter << " mean: "<< mean << " variance: "<< variance/(100) << endl;
-            if(variance/(100)<0.1){
-                cout<< "system stable"<< endl;
+
+        if(iter%1000==0 && iter>1000){
+            mean = 0;
+            std = 0;
+            for(int i=iter-100;i<iter;i++){
+                mean += temperatures[i];
             }
-            mean = 0; variance = 0;
+            mean = mean/100;
+            for(int i=iter-100;i<iter;i++){
+                std += (temperatures[i]-mean)*(temperatures[i]-mean);
+            }
+            std = sqrt(std/100);
+            cout<< "iter: "<< iter << " mean: "<< mean << " std: "<< std << endl;
 
-        }
 
-        if(iter%100>0){
-            old_mean = mean;
-            old_variance = variance;
-            mean = mean + (tot_energy_list[iter-1]-mean)/(iter%100);
-            variance = old_variance + (tot_energy_list[iter-1]-old_mean)*(tot_energy_list[iter-1]-mean);
+            if(std<std_min && iter>0){
+                cout<< "system stable"<< endl;
+
+
+
+                break;
+
+            }
+
+
         }
 
 
@@ -372,16 +401,17 @@ int main(int argc, char *argv[]) {
         momentum = sqrt(sum_vx * sum_vx + sum_vy * sum_vy) * m;
         momentum_list.push_back(momentum);
         T = 2.0 * kinetic_energy / (3.0 * N);
+        if(verbose){cout<<"iter: "<< iter<<endl;}
 
-        //cout<<"iter: "<< iter<<endl;
         if (iter % 100 == 0) {
             if (iter % 2000 == 0) {
                 auto end = std::chrono::high_resolution_clock::now(); // get end time
                 auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
                         end - start_time); // calculate duration
-                double duration_seconds = static_cast<double>(duration.count()) / 1'000'000.0;
+                double duration_seconds = static_cast<double>(duration.count()) / 1000000.0;
                 cout << "At iteration: " << iter << " time execution: " << duration_seconds << " seconds" << endl;
             }
+
             //plt::clf();
             plt::subplot(2, 2, 1);
             plt::cla();
@@ -389,26 +419,27 @@ int main(int argc, char *argv[]) {
             plt::ylim(0.0, (double) L);
             plt::grid(true);
             plt::scatter(x_array, y_array, 20);
+
             plt::subplot(2, 2, 2);
             plt::named_plot("kinetic", kinetic_energy_list, "red");
             plt::named_plot("potential", pot_energy_list, "blue");
             plt::named_plot("total", tot_energy_list, "green");
             plt::xlabel("Iterations");
-            if (iter == 0) { plt::legend(); }
+            if (iter == 0) { plt::legend({{"loc", "upper right"}}); }
             plt::grid(true);
             plt::subplot(2, 2, 3);
 
             plt::named_plot("temperature", temperatures, "r");
-            if (iter == 0) { plt::legend(); }
+            if (iter == 0) { plt::legend({{"loc", "upper right"}}); }
             plt::grid(true);
             plt::xlabel("Iterations");
             plt::subplot(2, 2, 4);
 
             plt::named_plot("momentum", momentum_list, "blue");
-            if (iter == 0) { plt::legend(); }
+            if (iter == 0) { plt::legend({{"loc", "upper right"}}); }
             plt::grid(true);
             plt::xlabel("Iterations");
-            if (iter == 0) { plt::legend(); }
+            if (iter == 0) { plt::legend({{"loc", "upper right"}}); }
             plt::draw();
 
             plt::pause(0.001);
@@ -419,6 +450,36 @@ int main(int argc, char *argv[]) {
     auto duration = (end - start_time); // calculate duration
 
     cout <<endl<<"Execution time: " << (double)duration.count() / 1000000.0 << " seconds" << endl;
+    computeRdf(rdf, particle_list, L, rc, nBins);
+    for (int i=0; i < nBins; i++){
+        cout<< "rdf: "<< rdf[i]<< endl;
+
+    }
+    //plt::save("plot.png");
+
+    vector<double> radius;
+    const double d_r = rc/nBins;
+
+    radius.reserve(rdf.size());
+
+    for(int i=0; i<(int) rdf.size(); i++){
+        radius.push_back(i*d_r);
+    }
+    if(verbose){
+        cout<<"radius size: "<<radius.size()<<endl;
+        cout<<"rdf size: "<<rdf.size()<<endl;
+    }
+    plt::ioff();
+    //plt::figure();
+    plt::figure_size(1200, 780);
+    plt::title("G(r)");
+    plt::plot(radius,rdf);
+    //plt::xticks(radius);
+    plt::grid(true);
+    plt::show();
+
+
+
     cout << "AS3 completed" << endl;
     return 0;
 }

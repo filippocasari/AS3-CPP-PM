@@ -7,9 +7,10 @@ set(SOURCES
         Particle.cpp
         )
 
+
 add_executable(AS3PM ${SOURCES})
 
-target_compile_features(AS3PM PRIVATE cxx_std_17)
+target_compile_features(AS3PM PRIVATE cxx_std_11)
 
 
 target_include_directories(AS3PM PRIVATE
@@ -28,7 +29,6 @@ target_link_directories(AS3PM PRIVATE
 
 target_link_libraries(AS3PM PRIVATE
         python3.10
-
         )
 
 set_target_properties(AS3PM PROPERTIES OUTPUT_NAME "AS3PM")

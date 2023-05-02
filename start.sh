@@ -13,7 +13,7 @@ function cleanup {
 # set number of openmp threads
 export OMP_NUM_THREADS=2
 # compile
-g++ main.cpp Particle.cpp -std=c++17 -L/Library/Frameworks/Python.framework/Versions/3.10/lib -lpython3.10 -I/usr/local/Cellar/libomp/16.0.2/include -L/usr/local/Cellar/python@3.10/3.10.10_1/Frameworks/Python.framework/Versions/3.10/include/python3.10 -I/usr/local/Cellar/python@3.10/3.10.10_1/Frameworks/Python.framework/Versions/3.10/include/python3.10 -I/usr/local/lib/python3.10/site-packages/numpy/core/include -lomp -o AS3PM
+g++ main.cpp Particle.cpp -std=c++17 -L/Library/Frameworks/Python.framework/Versions/3.10/lib -lpython3.10 -I/usr/local/Cellar/libomp/16.0.2/include -L/usr/local/Cellar/python@3.10/3.10.10_1/Frameworks/Python.framework/Versions/3.10/include/python3.10 -I/usr/local/Cellar/python@3.10/3.10.10_1/Frameworks/Python.framework/Versions/3.10/include/python3.10 -I/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/numpy/core/include -lomp -o AS3PM
 # takes args
 N=$1
 if [[ $1 == "--help" || $1 == "-h" ]]; then
