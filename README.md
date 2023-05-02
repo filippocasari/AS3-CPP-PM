@@ -29,6 +29,7 @@ args are: Num particles initial temperature (double), bath temperature and verbo
 - #### For only this point initial temperature and bath temperature must be equal. 
 - #### if you don't want to run it with openmp, comment pragma in the cpp file and do not include or link any libraries related to it.
 - #### I changed slightly the code of matplotlibcpp to make it work. In particular I followed some suggestions given by developers in the issues section on github.
-
+![alt text](images/900PointBTthermostat0.png)
+![alt text](images/900PointBTthermostat0_RDF.png)
 
 
