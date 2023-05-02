@@ -455,7 +455,7 @@ int main(int argc, char *argv[]) {
         cout<< "rdf: "<< rdf[i]<< endl;
 
     }
-    //plt::save("plot.png");
+
 
     vector<double> radius;
     const double d_r = rc/nBins;
